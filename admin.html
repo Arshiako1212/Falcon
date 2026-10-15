@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>پنل ادمین</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css"></head>
+<body class="panel"><div class="wrap">
+<div id="login" class="auth box" style="display:none"><h1 style="margin:0 0 10px;font-size:20px">🔐 ورود ادمین</h1>
+<label>شناسه</label><input id="aid" dir="ltr" autocomplete="username"><label>رمز عبور</label><input id="apw" type="password" dir="ltr" autocomplete="current-password">
+<p class="err" id="err" role="alert"></p><button id="go" style="width:100%">ورود</button></div>
+<div id="dash" style="display:none"><div class="top"><h1>🛠 پنل ادمین</h1><div class="row" style="flex:0"><button class="ghost" id="rf">بازخوانی</button><button class="ghost" id="out">خروج</button></div></div>
+<div class="box"><div class="stats" id="stats"></div></div>
+<div class="box"><h2>کاربران</h2><div class="scroll" id="users"></div></div>
+<div class="box"><h2>کارت‌ها</h2><div class="scroll" id="cards"></div></div>
+<div class="box"><h2>فعالیت‌ها (۳۰۰ مورد آخر)</h2><div class="scroll" id="logs"></div></div></div></div>
+<script src="/card.js"></script><script>
+const tbl=(heads,rows)=>h('table',{},h('tr',{},heads.map(x=>h('th',{},x))),rows.map(r=>h('tr',{},r.map(c=>h('td',{},c)))));
+async function load(){try{const d=await api('/api/admin/data');$('#login').style.display='none';$('#dash').style.display='block';
+ $('#stats').replaceChildren(...[['کاربران',d.users.length],['کارت‌ها',d.cards.length],['بازدید کل',d.cards.reduce((a,c)=>a+c.views,0)]].map(([k,v])=>h('div',{class:'stat'},h('b',{},String(v)),k)));
+ $('#users').replaceChildren(tbl(['تلفن','عضویت','آخرین ورود','کارت',''],d.users.map(u=>[h('span',{dir:'ltr'},u.phone),fmt(u.createdAt),fmt(u.lastLogin),String(u.cards),h('button',{class:'bad',onclick:async()=>{if(confirm('کاربر '+u.phone+' و همه کارت‌هایش حذف شود؟')){await api('/api/admin/users/'+u.id,'DELETE');load()}}},'حذف')])));
+ $('#cards').replaceChildren(tbl(['عنوان','مالک','بازدید','ساخت','',''],d.cards.map(c=>[c.title,h('span',{dir:'ltr'},c.owner),String(c.views),fmt(c.createdAt),h('a',{href:'/c/'+c.id,target:'_blank',style:'color:var(--gold)'},'مشاهده'),h('button',{class:'bad',onclick:async()=>{if(confirm('کارت حذف شود؟')){await api('/api/admin/cards/'+c.id,'DELETE');load()}}},'حذف')])));
+ $('#logs').replaceChildren(tbl(['زمان','چه کسی','کار','توضیح'],d.logs.map(l=>[fmt(l.t),h('span',{dir:'ltr'},l.who),l.action,l.detail])));
+}catch{$('#login').style.display='block';$('#dash').style.display='none'}}
+$('#go').onclick=async()=>{try{await api('/api/admin/login','POST',{id:$('#aid').value,password:$('#apw').value});$('#apw').value='';load()}catch(e){$('#err').textContent=e.message}};
+$('#apw').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+$('#out').onclick=async()=>{await api('/api/admin/logout','POST',{});load()};$('#rf').onclick=load;load();
+</script></body></html>

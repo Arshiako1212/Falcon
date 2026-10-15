@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ساخت کارت پستال دیجیتال</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css"></head>
+<body class="panel"><div class="auth box">
+<h1 style="margin:0 0 4px;font-size:22px">💌 کارت پستال دیجیتال</h1>
+<p style="color:var(--mut);margin:0 0 14px;font-size:14px">کارت دعوت و تبریک خودت را با متن، موسیقی و انیمیشن دلخواه بساز و لینکش را بفرست.</p>
+<div class="tabs"><button id="t1">ورود</button><button id="t2" class="ghost">ثبت‌نام</button></div>
+<label for="ph">شماره تلفن</label><input id="ph" inputmode="tel" autocomplete="username" placeholder="09123456789" dir="ltr">
+<label for="pw">رمز عبور</label><input id="pw" type="password" autocomplete="current-password" dir="ltr">
+<p class="err" id="err" role="alert"></p><button id="go" style="width:100%">ورود</button></div>
+<script src="/card.js"></script><script>
+let mode='login';api('/api/me').then(()=>location='/app').catch(()=>{});
+const set=m=>{mode=m;$('#go').textContent=m==='login'?'ورود':'ساخت حساب';$('#t1').className=m==='login'?'':'ghost';$('#t2').className=m==='login'?'ghost':'';$('#pw').autocomplete=m==='login'?'current-password':'new-password';$('#err').textContent=''};
+$('#t1').onclick=()=>set('login');$('#t2').onclick=()=>set('register');
+const go=async()=>{try{await api('/api/'+mode,'POST',{phone:$('#ph').value,password:$('#pw').value});location='/app'}catch(e){$('#err').textContent=e.message}};
+$('#go').onclick=go;$('#pw').onkeydown=e=>e.key==='Enter'&&go();
+</script></body></html>

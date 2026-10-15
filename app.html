@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>پنل کاربر</title>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Harmattan:wght@400;700&family=Lemonada:wght@400;600&family=Vazirmatn:wght@300;400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css"></head>
+<body class="panel"><div class="wrap">
+<div class="top"><h1>💌 پنل من</h1><div class="row" style="flex:0"><span id="who" dir="ltr" style="color:var(--mut)"></span><button class="ghost" id="out">خروج</button></div></div>
+<div class="box"><h2>کارت‌های من</h2><div id="list"></div><button id="new" style="margin-top:10px">+ کارت جدید</button></div>
+<div class="grid"><div class="box" id="form"><h2 id="ftitle">ساخت کارت</h2>
+<label>عنوان</label><input data-k="title" maxlength="80">
+<label>متن تبریک</label><textarea data-k="message" maxlength="600"></textarea>
+<label>شعر یا متن دلخواه (هر خط جدا)</label><textarea data-k="poem" maxlength="800"></textarea>
+<label>عنوان بخش دعوت</label><input data-k="inviteTitle" maxlength="60">
+<label>جزئیات دعوت (روز، ساعت، مکان، ...)</label><div id="det"></div><button class="ghost" id="adddet" style="margin-top:6px">+ افزودن مورد</button>
+<label>جمله پایانی</label><input data-k="footer" maxlength="120">
+<div class="row"><div><label>نوع نوشتار (فونت)</label><select data-k="font" data-p="fonts"></select></div><div><label>رنگ‌بندی</label><select data-k="theme" data-p="themes"></select></div></div>
+<div class="row"><div><label>شکل باز شدن</label><select data-k="opening" data-p="openings"></select></div><div><label>افکت پس‌زمینه</label><select data-k="effect" data-p="effects"></select></div></div>
+<div class="row"><div><label>عکس</label><select data-k="image" data-p="images" id="selimg"></select></div><div><label>آهنگ</label><select data-k="music" data-p="music" id="selmus"></select></div></div>
+<div class="row"><div><label>آپلود عکس خودتان (png / jpg / webp، تا ۳ مگ)</label><input type="file" id="fimg" accept="image/png,image/jpeg,image/webp"></div><div><label>آپلود آهنگ خودتان (mp3 / ogg / wav / m4a)</label><input type="file" id="fmus" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4"></div></div>
+<label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input type="checkbox" data-k="typing" style="width:auto"> نوشته شدن حرف‌به‌حرف متن</label>
+<p class="err" id="msg" role="alert"></p>
+<div class="row"><button id="save">ذخیره</button><button class="ghost" id="replay">پخش از اول</button><button class="ghost" id="test">🎵 تست آهنگ</button></div></div>
+<div><div class="preview" id="pv"></div></div></div></div>
+<script src="/card.js"></script><script>
+const blank=()=>({title:'روزتان مبارک',message:'متن تبریک خود را اینجا بنویسید.',poem:'',inviteTitle:'دعوت به جشن',details:[{l:'روز',v:'شنبه'},{l:'ساعت',v:'۱۱ صبح'},{l:'مکان',v:''}],footer:'با عشق ♥',font:'vazir',theme:'night',image:'aurora',music:'calm',opening:'envelope',effect:'hearts',typing:true});
+let cur=blank(),curId=null,tm;
+document.querySelectorAll('select').forEach(s=>{for(const k in PRESETS[s.dataset.p])s.append(h('option',{value:k},PRESETS[s.dataset.p][k]))});
+const addOpt=(sel,url,label)=>{if(![...sel.options].some(o=>o.value===url))sel.append(h('option',{value:url},label))};
+const preview=(instant=true)=>renderCard($('#pv'),cur,{instant});
+const later=()=>{clearTimeout(tm);tm=setTimeout(()=>preview(),250)};
+const sync=()=>{document.querySelectorAll('[data-k]').forEach(el=>{const v=cur[el.dataset.k];if(el.type==='checkbox')el.checked=!!v;else{if(el.tagName==='SELECT')addOpt(el,v,'فایل آپلودشده');el.value=v}});detUI();preview()};
+document.querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{cur[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;later()});
+function detUI(){const d=$('#det');d.replaceChildren();cur.details.forEach((x,i)=>{const a=h('input',{value:x.l,placeholder:'عنوان',maxlength:30}),b=h('input',{value:x.v,placeholder:'مقدار',maxlength:80});
+ a.oninput=()=>{x.l=a.value;later()};b.oninput=()=>{x.v=b.value;later()};
+ d.append(h('div',{class:'row',style:'margin-top:6px'},a,b,h('button',{class:'bad',onclick:()=>{cur.details.splice(i,1);detUI();preview()}},'✕')))})}
+$('#adddet').onclick=()=>{if(cur.details.length<8){cur.details.push({l:'',v:''});detUI()}};
+const up=async(file,sel,label)=>{$('#msg').className='err';$('#msg').textContent='';if(!file)return;
+ try{const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(file)});
+  const {url}=await api('/api/upload','POST',{data});addOpt(sel,url,label+': '+file.name);sel.value=url;cur[sel.dataset.k]=url;preview()}catch(e){$('#msg').textContent=e.message}};
+$('#fimg').onchange=e=>up(e.target.files[0],$('#selimg'),'عکس من');$('#fmus').onchange=e=>up(e.target.files[0],$('#selmus'),'آهنگ من');
+$('#save').onclick=async()=>{try{const c=curId?await api('/api/cards/'+curId,'PUT',cur):await api('/api/cards','POST',cur);curId=c.id;$('#ftitle').textContent='ویرایش کارت';$('#msg').className='ok';$('#msg').textContent='ذخیره شد ✓';load()}catch(e){$('#msg').className='err';$('#msg').textContent=e.message}};
+$('#replay').onclick=()=>preview(false);
+$('#test').onclick=()=>{Music.on?Music.stop():Music.start(cur.music)};
+$('#new').onclick=()=>{cur=blank();curId=null;$('#ftitle').textContent='ساخت کارت';$('#msg').textContent='';sync()};
+$('#out').onclick=async()=>{await api('/api/logout','POST',{});location='/'};
+async function load(){const l=$('#list');const cs=await api('/api/cards');l.replaceChildren(cs.length?null:h('p',{style:'color:var(--mut)'},'هنوز کارتی نساخته‌اید.'));
+ cs.forEach(c=>{const url=location.origin+'/c/'+c.id;l.append(h('div',{class:'row',style:'padding:8px 0;border-top:1px solid var(--line)'},h('b',{},c.title||'(بدون عنوان)'),h('span',{style:'color:var(--mut);flex:0 0 auto'},c.views+' بازدید'),
+ h('button',{class:'ghost',onclick:e=>{navigator.clipboard.writeText(url);e.target.textContent='کپی شد ✓'}},'کپی لینک'),h('a',{class:'btn',href:url,target:'_blank',style:'flex:0 0 auto;border:1px solid var(--line);color:var(--tx);background:none'},'مشاهده'),
+ h('button',{class:'ghost',onclick:()=>{cur={...blank(),...c};curId=c.id;$('#ftitle').textContent='ویرایش کارت';sync();scrollTo(0,document.body.scrollHeight/4)}},'ویرایش'),
+ h('button',{class:'bad',onclick:async()=>{if(confirm('این کارت حذف شود؟')){await api('/api/cards/'+c.id,'DELETE');if(curId===c.id)curId=null;load()}}},'حذف')))})}
+api('/api/me').then(m=>{$('#who').textContent=m.phone;sync();load()}).catch(()=>location='/');
+</script></body></html>
