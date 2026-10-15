@@ -1,7 +1,0 @@
-<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>کارت پستال</title>
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Harmattan:wght@400;700&family=Lemonada:wght@400;600&family=Vazirmatn:wght@300;400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css">
-<style>html,body{margin:0;height:100%}.cardroot{min-height:100vh}</style></head>
-<body><div id="root"></div><script src="/card.js"></script><script>
-api('/api/public/card/'+location.pathname.split('/').pop()).then(c=>{document.title=c.title||'کارت پستال';renderCard($('#root'),c)})
-.catch(()=>{document.body.className='panel';document.body.append(h('p',{style:'text-align:center;margin-top:20vh'},'این کارت وجود ندارد یا حذف شده است.'))});
-</script></body></html>
