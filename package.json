@@ -1,0 +1,9 @@
+{
+  "name": "digital-postcard-maker",
+  "version": "2.0.0",
+  "description": "Digital postcard builder with user and admin panels (Node + PostgreSQL)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "pg": "^8.11.5" },
+  "engines": { "node": ">=18" }
+}
