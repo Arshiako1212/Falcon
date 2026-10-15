@@ -43,6 +43,7 @@ const isAdmin = async q => { const s = await sess(q, 'asid'); return !!s && s.ro
 /* ---------- card validation (allow-lists, never trust the client) ---------- */
 const S = (v, n) => String(v ?? '').slice(0, n);
 const pick = (v, list, d) => list.includes(v) ? v : d;
+const color = v => /^#[0-9a-fA-F]{6}$/.test(v) ? v : '';
 const asset = v => /^(\/uploads\/[a-f0-9]{12}\.(png|jpg|webp|mp3|ogg|wav|m4a)|[a-z]{2,12})$/.test(v) ? v : 'none';
 const clean = b => ({
   title: S(b.title, 80), message: S(b.message, 600), poem: S(b.poem, 800), inviteTitle: S(b.inviteTitle, 60), footer: S(b.footer, 120),
@@ -50,7 +51,12 @@ const clean = b => ({
   font: pick(b.font, ['vazir', 'ruqaa', 'harmattan', 'lemonada'], 'vazir'),
   theme: pick(b.theme, ['night', 'rose', 'ocean', 'emerald'], 'night'),
   opening: pick(b.opening, ['envelope', 'gate'], 'envelope'),
-  effect: pick(b.effect, ['hearts', 'sparkles', 'none'], 'hearts'),
+  effect: pick(b.effect, ['hearts', 'sparkles', 'confetti', 'petals', 'balloons', 'fireworks', 'stars', 'none'], 'hearts'),
+  titleColor: color(b.titleColor), textColor: color(b.textColor), poemColor: color(b.poemColor),
+  titleFx: pick(b.titleFx, ['shimmer', 'rainbow', 'solid'], 'shimmer'),
+  entrance: pick(b.entrance, ['rise', 'zoom', 'flip', 'bounce'], 'rise'),
+  imgRatio: pick(b.imgRatio, ['16/9', '4/3', '1/1', '3/1'], '16/9'),
+  imgPos: pick(b.imgPos, ['center', 'top', 'bottom'], 'center'),
   typing: !!b.typing, image: asset(b.image || 'none'), music: asset(b.music || 'none'),
 });
 const card = r => ({ id: r.id, uid: r.uid, createdAt: r.created_at, updatedAt: r.updated_at, views: r.views, ...r.data });
